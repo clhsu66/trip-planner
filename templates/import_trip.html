@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Import Trip from CSV - Trip Planner{% endblock %}
+
+{% block content %}
+<h2>Import Trip from CSV</h2>
+<p class="hint">
+    Upload a CSV to create a new trip and pre-fill its itinerary.
+    Expected columns: <code>date,time_of_day,category,name,city,meal</code>.
+</p>
+
+<form method="post" enctype="multipart/form-data" class="card">
+    <label>
+        Destination (country or main city)
+        <input type="text" name="destination" placeholder="Japan, Italy, etc." required>
+    </label>
+    <label>
+        Travel Style
+        <select name="travel_style">
+            <option value="Budget">Budget</option>
+            <option value="Luxury">Luxury</option>
+            <option value="Family">Family</option>
+            <option value="Foodie">Foodie</option>
+            <option value="Flexible" selected>Flexible / Mix</option>
+        </select>
+    </label>
+    <label>
+        CSV file
+        <input type="file" name="file" accept=".csv" required>
+    </label>
+    <button type="submit">Import Trip</button>
+</form>
+
+<p class="hint">
+    CSV format (header row required):
+    <br>
+    <code>date,time_of_day,category,name,city,meal</code>
+    <br>
+    Example:
+    <br>
+    <code>2026-03-10,morning,place,Senso-ji Temple,Tokyo,</code><br>
+    <code>2026-03-10,evening,restaurant,Ichiran Ramen,Tokyo,dinner</code><br>
+    <code>2026-03-11,,hotel,Hotel Niwa Tokyo,Tokyo,</code>
+</p>
+{% endblock %}
+

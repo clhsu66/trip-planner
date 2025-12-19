@@ -1,0 +1,691 @@
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: #f5f5f5;
+    color: #222;
+    scroll-behavior: smooth;
+}
+
+h1, h2, h3, h4, h5 {
+    margin-top: 0;
+    font-weight: 600;
+}
+
+h2 {
+    font-size: 1.6rem;
+}
+
+h3 {
+    font-size: 1.25rem;
+}
+
+h4 {
+    font-size: 1.05rem;
+}
+
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+.site-header {
+    background-color: #1e88e5;
+    color: #fff;
+}
+
+.site-header h1 {
+    margin: 0;
+    font-size: 1.6rem;
+}
+
+.site-header a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.site-header nav {
+    margin-top: 0.5rem;
+}
+
+.site-header nav a {
+    margin-right: 1rem;
+    font-weight: 500;
+}
+
+.flash-messages {
+    list-style: none;
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: 4px;
+}
+
+.trip-list {
+    list-style: none;
+    padding: 0;
+}
+
+.trip-list li {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.trip-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.trip-card-main h3 {
+    margin-top: 0;
+    margin-bottom: 0.25rem;
+}
+
+.trip-location-graphic {
+    flex: 0 0 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #1e88e5;
+    text-transform: uppercase;
+}
+
+form.card,
+.card {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="number"],
+input[type="url"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+    margin-top: 0.25rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font: inherit;
+    box-sizing: border-box;
+}
+
+textarea {
+    min-height: 60px;
+}
+
+button,
+.button-link {
+    display: inline-block;
+    background-color: #1e88e5;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.button-link.secondary,
+button.secondary {
+    background-color: #fff;
+    color: #1e88e5;
+    border: 1px solid #1e88e5;
+}
+
+.button-link.secondary:hover,
+button.secondary:hover {
+    background-color: #e3f2fd;
+}
+
+.button-link.ghost {
+    background-color: transparent;
+    color: #1e88e5;
+    border: none;
+    padding-left: 0;
+}
+
+.button-link.ghost:hover {
+    background-color: transparent;
+    text-decoration: underline;
+}
+
+button:hover,
+.button-link:hover {
+    background-color: #1669b2;
+}
+
+.row {
+    display: flex;
+    gap: 1rem;
+}
+
+.row > label {
+    flex: 1;
+}
+
+.layout {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+.layout-main {
+    flex: 2;
+}
+
+.layout-side {
+    flex: 1.2;
+}
+
+.timeline-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    padding: 0.5rem 0 0.75rem 0;
+    margin-bottom: 0.75rem;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.day-card {
+    margin-bottom: 1rem;
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e0e0e0;
+    scroll-margin-top: 4.5rem;
+}
+
+.slot {
+    margin-top: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+}
+
+.slot h5 {
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+}
+
+.slot-morning {
+    border-left: 4px solid #ffb300;
+    background-color: #fff8e1;
+}
+
+.slot-afternoon {
+    border-left: 4px solid #29b6f6;
+    background-color: #e1f5fe;
+}
+
+.slot-evening {
+    border-left: 4px solid #8e24aa;
+    background-color: #f3e5f5;
+}
+
+.checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0;
+}
+
+.checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: space-between;
+}
+
+.checklist-slot {
+    border-top: 1px dashed #ddd;
+    padding-top: 0.5rem;
+}
+
+.selected-list {
+    list-style: none;
+    margin: 0.25rem 0 0.5rem 0;
+    padding: 0;
+    font-size: 0.85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.selected-list li {
+    background-color: #e3f2fd;
+    border-radius: 999px;
+    padding: 0.15rem 0.6rem;
+}
+
+.selected-list a {
+    text-decoration: none;
+    color: #1e88e5;
+}
+
+.itinerary-actions-bar {
+    position: sticky;
+    bottom: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 0.75rem 0;
+    margin-top: 0.5rem;
+    background-color: #f5f5f5;
+    border-top: 1px solid #ddd;
+}
+
+.trip-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.trip-header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.trip-header-actions form {
+    margin: 0;
+}
+
+.hint {
+    font-size: 0.85rem;
+    color: #555;
+}
+
+.small-hint {
+    margin: 0;
+    align-self: center;
+}
+
+.budget-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.budget-table th,
+.budget-table td {
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.budget-table tfoot th {
+    border-top: 2px solid #ccc;
+}
+
+.budget-actual-cell input[type="number"] {
+    width: 100%;
+    min-width: 6rem;
+}
+
+.budget-remove-cell {
+    text-align: center;
+    width: 1%;
+    white-space: nowrap;
+}
+
+.budget-remove-button {
+    padding: 0.15rem 0.4rem;
+    min-width: 1.5rem;
+    background-color: transparent;
+    color: #666;
+    border: none;
+}
+
+.budget-remove-button:hover {
+    background-color: transparent;
+}
+
+.icon {
+    display: inline-block;
+    margin-right: 0.25rem;
+    font-size: 0.85em;
+    vertical-align: baseline;
+}
+
+.icon-map::before {
+    content: "⌖";
+}
+
+.icon-download::before {
+    content: "↓";
+}
+
+.icon-upload::before {
+    content: "↑";
+}
+
+.icon-trash::before {
+    content: "";
+    display: inline-block;
+    width: 0.9em;
+    height: 0.9em;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='3 6 5 6 21 6'/><path d='M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'/><path d='M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6'/><line x1='10' y1='11' x2='10' y2='17'/><line x1='14' y1='11' x2='14' y2='17'/></svg>");
+}
+
+.hint-icon {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    margin-left: 0.25rem;
+    border-radius: 50%;
+    border: 1px solid #aaa;
+    font-size: 0.7em;
+    line-height: 1em;
+    text-align: center;
+    cursor: help;
+    color: #666;
+}
+
+.toast {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    padding: 0.5rem 0.75rem;
+    background-color: #323232;
+    color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    font-size: 0.9rem;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 1000;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+#page-loading-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(245, 245, 245, 0.85);
+    z-index: 900;
+}
+
+#page-loading-overlay.is-visible {
+    display: flex;
+}
+
+.page-loading-inner {
+    text-align: center;
+    color: #1e3a5f;
+    font-size: 0.95rem;
+}
+
+.page-loading-spinner {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 3px solid #bbdefb;
+    border-top-color: #1e88e5;
+    animation: page-loading-spin 0.8s linear infinite;
+    margin: 0 auto 0.5rem auto;
+}
+
+.page-loading-text {
+    font-weight: 500;
+}
+
+@keyframes page-loading-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.selected-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    margin-left: 0.25rem;
+}
+
+.selected-badge.is-hidden {
+    display: none;
+}
+
+.checklist label {
+    font-size: 0.9rem;
+}
+
+.checklist label a {
+    text-decoration: none;
+    color: #1e88e5;
+}
+
+.checklist label a:hover {
+    text-decoration: underline;
+}
+
+.checklist li + li {
+    border-top: 1px dashed #eee;
+    padding-top: 0.35rem;
+    margin-top: 0.35rem;
+}
+
+.checklist-suggestions {
+    background-color: #fafafa;
+    border-radius: 6px;
+    padding: 0.5rem;
+}
+
+.packing-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 1rem 0;
+}
+
+.packing-list li + li {
+    margin-top: 0.25rem;
+}
+
+.packing-item-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.packing-item-check {
+    flex: 0 0 auto;
+}
+
+.packing-item-input {
+    flex: 1 1 auto;
+}
+
+.packing-remove-button {
+    padding: 0.15rem 0.4rem;
+    min-width: 1.5rem;
+    background-color: transparent;
+    color: #666;
+    border: none;
+}
+
+.packing-remove-button:hover {
+    background-color: transparent;
+}
+
+.day-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+}
+
+.day-nav-chip {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    background-color: #e3f2fd;
+    color: #1e88e5;
+    text-decoration: none;
+    font-size: 0.8rem;
+}
+
+.day-nav-chip:hover {
+    background-color: #bbdefb;
+}
+
+.day-card-body {
+    margin-top: 0.5rem;
+}
+
+.day-card.collapsed .day-card-body {
+    display: none;
+}
+
+.day-progress {
+    margin: 0.4rem 0 0.2rem 0;
+}
+
+.day-progress-bar {
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background-color: #e0e0e0;
+    overflow: hidden;
+}
+
+.day-progress-fill {
+    height: 100%;
+    background-color: #1e88e5;
+}
+
+.day-progress-text {
+    margin-top: 0.2rem;
+}
+
+.city-tag {
+    display: inline-block;
+    margin-left: 0.35rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    background-color: #e0f2f1;
+    color: #004d40;
+}
+
+.map-pill {
+    display: inline-block;
+    padding: 0.05rem 0.4rem;
+    margin-right: 0.25rem;
+    border-radius: 999px;
+    background-color: #1e88e5;
+    color: #fff;
+    font-size: 0.7rem;
+}
+
+.inline-form {
+    display: inline-block;
+    margin-left: 0.35rem;
+}
+
+.hide-suggestion-button {
+    border: none;
+    background: transparent;
+    color: #999;
+    padding: 0;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.hide-suggestion-button:hover {
+    color: #555;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    background-color: #e0e0e0;
+    color: #424242;
+}
+
+.status-badge.status-planning {
+    background-color: #fff3cd;
+    color: #8a6d3b;
+}
+
+.status-badge.status-mostly-planned {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.status-badge.status-ready {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.budget-bar {
+    width: 100%;
+    height: 8px;
+    border-radius: 999px;
+    background-color: #e0e0e0;
+    margin: 0.5rem 0 0.75rem 0;
+    overflow: hidden;
+}
+
+.budget-bar-fill {
+    height: 100%;
+    background-color: #2e7d32;
+}
+
+@media (max-width: 800px) {
+    .layout {
+        flex-direction: column;
+    }
+
+    .trip-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .itinerary-actions-bar {
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+}

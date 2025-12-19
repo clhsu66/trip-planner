@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Selected Itinerary - Trip Planner{% endblock %}
+
+{% block content %}
+<h2>Selected Itinerary for {{ trip['destination'] }}</h2>
+<p>{{ trip['start_date'] }} → {{ trip['end_date'] }} · {{ trip['travel_style'] }}</p>
+<p class="hint">This view shows only what you’ve selected or filled in so far. Anything blank is marked as N/A or TBD.</p>
+
+{% for day in days %}
+    <article class="card">
+        <h3>
+            Day {{ day['day_number'] }} — {{ weekday_by_date.get(day['date']) }} {{ day['date'] }}
+            {% set location = location_by_date.get(day['date']) %}
+            {% if location %}
+                <span class="city-tag" data-city="{{ location }}">{{ location }}</span>
+            {% endif %}
+            {% set directions = directions_by_day.get(day['id']) %}
+            {% if directions %}
+                <span class="hint">
+                    · <a href="{{ directions }}" target="_blank" rel="noopener">
+                        <span class="icon icon-map" aria-hidden="true"></span>View route in Google Maps
+                    </a>
+                </span>
+            {% endif %}
+        </h3>
+
+        {% set day_items = items_by_day.get(day['id'], {}) %}
+        {% set selected_places = day_items.get('place', []) | selectattr('checked') | list %}
+        {% set selected_restaurants = day_items.get('restaurant', []) | selectattr('checked') | list %}
+
+        <h4>Morning</h4>
+        {% if day['morning_description'] %}
+            <p>{{ day['morning_description'] }}</p>
+        {% else %}
+            <p>N/A or TBD</p>
+        {% endif %}
+        {% set morning_places = selected_places | selectattr('slot', 'equalto', 'morning') | list %}
+        {% set morning_restaurants = selected_restaurants | selectattr('slot', 'equalto', 'breakfast') | list %}
+        {% if morning_places %}
+            <h5>Places to Visit</h5>
+            <ul>
+                {% for item in morning_places %}
+                    <li><a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if morning_restaurants %}
+            <h5>Restaurants</h5>
+            <ul>
+                {% for item in morning_restaurants %}
+                    <li><a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <h4>Afternoon</h4>
+        {% if day['afternoon_description'] %}
+            <p>{{ day['afternoon_description'] }}</p>
+        {% else %}
+            <p>N/A or TBD</p>
+        {% endif %}
+        {% set afternoon_places = selected_places | selectattr('slot', 'equalto', 'afternoon') | list %}
+        {% set afternoon_restaurants = selected_restaurants | selectattr('slot', 'equalto', 'lunch') | list %}
+        {% if afternoon_places %}
+            <h5>Places to Visit</h5>
+            <ul>
+                {% for item in afternoon_places %}
+                    <li><a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if afternoon_restaurants %}
+            <h5>Restaurants</h5>
+            <ul>
+                {% for item in afternoon_restaurants %}
+                    <li><a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <h4>Evening</h4>
+        {% if day['evening_description'] %}
+            <p>{{ day['evening_description'] }}</p>
+        {% else %}
+            <p>N/A or TBD</p>
+        {% endif %}
+        {% set evening_places = selected_places | selectattr('slot', 'equalto', 'evening') | list %}
+        {% set evening_restaurants = selected_restaurants | selectattr('slot', 'equalto', 'dinner') | list %}
+        {% if evening_places %}
+            <h5>Places to Visit</h5>
+            <ul>
+                {% for item in evening_places %}
+                    <li><a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if evening_restaurants %}
+            <h5>Restaurants</h5>
+            <ul>
+                {% for item in evening_restaurants %}
+                    <li><a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <h4>Hotels / Stays</h4>
+        {% set selected_hotels = day_items.get('hotel', []) | selectattr('checked') | list %}
+        {% if selected_hotels %}
+            <ul>
+                {% for item in selected_hotels %}
+                    <li><a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>N/A or TBD</p>
+        {% endif %}
+    </article>
+{% endfor %}
+
+<div class="itinerary-actions-bar">
+    <a class="button-link secondary" href="{{ url_for('trip_detail', trip_id=trip['id']) }}">Back to trip planning</a>
+</div>
+{% endblock %}

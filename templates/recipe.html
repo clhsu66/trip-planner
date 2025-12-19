@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Simple Local Recipe - {{ trip['destination'] }}{% endblock %}
+
+{% block content %}
+<article class="card">
+    <h2>Simple Local Recipe for {{ trip['destination'] }}</h2>
+    <p class="hint">Designed for "terrible cooks" using a few ingredients.</p>
+
+    <h3>{{ recipe.title }}</h3>
+    <p>{{ recipe.description }}</p>
+
+    <h4>Ingredients (about 3–5 items)</h4>
+    <ul>
+        {% for ingredient in recipe.ingredients %}
+            <li>{{ ingredient }}</li>
+        {% endfor %}
+    </ul>
+
+    <h4>Steps</h4>
+    <ol>
+        {% for step in recipe.steps %}
+            <li>{{ step }}</li>
+        {% endfor %}
+    </ol>
+
+    <p><a href="{{ url_for('trip_detail', trip_id=trip['id']) }}">Back to trip</a></p>
+</article>
+{% endblock %}
+

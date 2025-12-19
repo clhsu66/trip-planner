@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Trip Planner{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<header class="site-header">
+    <div class="container">
+        <h1><a href="{{ url_for('list_trips') }}">Trip Planner</a></h1>
+        <nav>
+            <a href="{{ url_for('list_trips') }}">My Trips</a>
+            <a href="{{ url_for('new_trip') }}">Plan a New Trip</a>
+        </nav>
+    </div>
+</header>
+<main class="container">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flash-messages">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+<div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+<div id="page-loading-overlay" aria-hidden="true">
+    <div class="page-loading-inner">
+        <div class="page-loading-spinner" aria-hidden="true"></div>
+        <div class="page-loading-text">Loading&hellip;</div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Collapsible day cards (trip detail view).
+    document.querySelectorAll('.day-card').forEach(function (card) {
+        var header = card.querySelector('h4');
+        var body = card.querySelector('.day-card-body');
+        if (!header || !body) return;
+        header.style.cursor = 'pointer';
+        header.addEventListener('click', function (e) {
+            if (e.target.tagName.toLowerCase() === 'a' || e.target.closest('button')) {
+                return;
+            }
+            card.classList.toggle('collapsed');
+        });
+    });
+
+    // Toggle "Selected" badge on checklist checkboxes without reload.
+    document.querySelectorAll('.checklist input[type="checkbox"]').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            var label = cb.closest('label');
+            if (!label) return;
+            var badge = label.querySelector('.selected-badge');
+            if (!badge) return;
+            if (cb.checked) {
+                badge.classList.remove('is-hidden');
+            } else {
+                badge.classList.add('is-hidden');
+            }
+        });
+    });
+
+    // Smooth scroll for day navigation chips with offset for top site header.
+    document.querySelectorAll('.day-nav a[href^="#"]').forEach(function (link) {
+        link.addEventListener('click', function (e) {
+            var targetId = this.getAttribute('href').slice(1);
+            var el = document.getElementById(targetId);
+            if (!el) return;
+            e.preventDefault();
+
+            var offset = 0;
+            var siteHeader = document.querySelector('.site-header');
+            if (siteHeader) {
+                offset += siteHeader.offsetHeight;
+            }
+            offset += 8; // small extra spacing
+
+            var rect = el.getBoundingClientRect();
+            var targetTop = rect.top + window.pageYOffset - offset;
+            window.scrollTo({ top: targetTop, behavior: 'smooth' });
+        });
+    });
+
+    // Colorize city tags based on city name.
+    document.querySelectorAll('.city-tag').forEach(function (tag) {
+        var name = (tag.dataset.city || tag.textContent || '').toLowerCase().trim();
+        if (!name) return;
+        var hash = 0;
+        for (var i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        var hue = Math.abs(hash) % 360;
+        tag.style.backgroundColor = 'hsl(' + hue + ', 70%, 92%)';
+        tag.style.color = '#1e3a5f';
+    });
+
+    // Colorize trip location graphics on the dashboard based on destination.
+    document.querySelectorAll('.trip-location-graphic').forEach(function (box) {
+        var name = (box.dataset.destination || box.textContent || '').toLowerCase().trim();
+        if (!name) return;
+        var hash = 0;
+        for (var i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        var hue = Math.abs(hash) % 360;
+        box.style.background = 'linear-gradient(135deg, hsl(' + hue + ', 75%, 55%), hsl(' + ((hue + 40) % 360) + ', 80%, 45%))';
+    });
+
+    // Hide suggestion buttons: submit a tiny POST form to the hide URL.
+    document.querySelectorAll('.hide-suggestion-button').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var url = btn.getAttribute('data-hide-url');
+            if (!url) return;
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = url;
+            document.body.appendChild(form);
+            form.submit();
+        });
+    });
+
+    // Toast helper.
+    var toastEl = document.getElementById('toast');
+    function showToast(message) {
+        if (!toastEl || !message) return;
+        toastEl.textContent = message;
+        toastEl.classList.add('show');
+        setTimeout(function () {
+            toastEl.classList.remove('show');
+        }, 2500);
+    }
+
+    // Show toast for flash messages (saves, imports, etc.).
+    if (toastEl) {
+        var flashItems = document.querySelectorAll('.flash-messages li');
+        var message = null;
+        flashItems.forEach(function (li) {
+            var text = (li.textContent || '').trim();
+            if (!text) return;
+            if (/updated|imported|added|deleted|saved/i.test(text)) {
+                if (!message) {
+                    message = text;
+                }
+            }
+        });
+        if (message) {
+            showToast(message);
+        }
+    }
+
+    // Show toast when clicking hint icons, using their title text.
+    document.querySelectorAll('.hint-icon').forEach(function (icon) {
+        icon.addEventListener('click', function (e) {
+            e.preventDefault();
+            var text = icon.getAttribute('title') || icon.getAttribute('data-hint') || '';
+            if (text) {
+                showToast(text);
+            }
+        });
+    });
+
+    // Global loading overlay for navigation and form submits.
+    var loadingOverlay = document.getElementById('page-loading-overlay');
+    function showLoadingOverlay() {
+        if (loadingOverlay) {
+            loadingOverlay.setAttribute('aria-hidden', 'false');
+            loadingOverlay.classList.add('is-visible');
+        }
+    }
+
+    window.addEventListener('beforeunload', function () {
+        showLoadingOverlay();
+    });
+});
+</script>
+</body>
+</html>

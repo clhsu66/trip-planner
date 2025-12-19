@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Update Trip from CSV - Trip Planner{% endblock %}
+
+{% block content %}
+<h2>Update Trip from CSV</h2>
+<p>{{ trip['destination'] }} · {{ trip['start_date'] }} → {{ trip['end_date'] }}</p>
+<p class="hint">
+    Upload a CSV (same format as the Download CSV button) to replace this trip's places, restaurants, and hotels.
+    Existing dates stay the same; items and stops are rebuilt from the file.
+</p>
+
+<form method="post" enctype="multipart/form-data" class="card">
+    <label>
+        CSV file
+        <input type="file" name="file" accept=".csv" required>
+    </label>
+    <button type="submit">Update Trip from CSV</button>
+</form>
+
+<p class="hint">
+    Expected columns: <code>date,time_of_day,category,name,city,meal,selected</code>.<br>
+    Only rows whose dates fall within this trip's start/end dates are applied.
+</p>
+
+<p><a href="{{ url_for('trip_detail', trip_id=trip['id']) }}">Back to trip</a></p>
+{% endblock %}
+

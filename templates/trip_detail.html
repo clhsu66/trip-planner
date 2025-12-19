@@ -1,0 +1,578 @@
+{% extends "base.html" %}
+
+{% block title %}Trip to {{ trip['destination'] }} - Trip Planner{% endblock %}
+
+{% block content %}
+<header class="trip-header">
+    <div>
+        <h2>{{ trip['destination'] }}</h2>
+        <p>{{ trip['start_date'] }} → {{ trip['end_date'] }} · {{ trip['travel_style'] }}</p>
+    </div>
+    <div class="trip-header-actions">
+        <p class="hint small-hint">
+            Suggestions source:
+            {% if using_live_places %}
+                Live Google Places data
+            {% else %}
+                Offline preset suggestions
+            {% endif %}
+        </p>
+        <a class="button-link secondary" href="{{ url_for('edit_trip', trip_id=trip['id']) }}">Edit Trip</a>
+        <form method="post" action="{{ url_for('generate_itinerary', trip_id=trip['id']) }}">
+            <button type="submit" class="secondary">
+                One-Click Itinerary (AI-style)
+                <span class="hint-icon"
+                      title="Fills in empty morning/afternoon/evening descriptions using your travel style. It will not overwrite anything you already wrote.">?</span>
+            </button>
+        </form>
+        <form method="post" action="{{ url_for('suggest_places', trip_id=trip['id']) }}">
+            <button type="submit" class="secondary">
+                Suggest Places/Food/Hotels
+                <span class="hint-icon"
+                      title="Fetches suggested places, restaurants, and hotels for each day based on your cities. You can check what you like or hide what you don't.">?</span>
+            </button>
+        </form>
+    </div>
+</header>
+
+<section class="layout">
+    <div class="layout-main">
+        <div class="timeline-header">
+            <h3>Day-by-Day Timeline</h3>
+            <nav class="day-nav">
+                {% for day in days %}
+                    <a href="#day-{{ day['id'] }}" class="day-nav-chip">
+                        Day {{ day['day_number'] }}
+                    </a>
+                {% endfor %}
+            </nav>
+        </div>
+        <form method="post" action="{{ url_for('update_itinerary', trip_id=trip['id']) }}">
+            {% for day in days %}
+                <article class="day-card" id="day-{{ day['id'] }}">
+                    {% set day_items = items_by_day.get(day['id'], {}) %}
+                    {% set all_places = day_items.get('place', []) %}
+                    {% set all_restaurants = day_items.get('restaurant', []) %}
+                    {% set selected_places = all_places | selectattr('checked') | list %}
+                    {% set selected_restaurants = all_restaurants | selectattr('checked') | list %}
+                    <h4>
+                        Day {{ day['day_number'] }} — {{ weekday_by_date.get(day['date']) }} {{ day['date'] }}
+                        {% set location = location_by_date.get(day['date']) %}
+                        {% if location %}
+                            <span class="city-tag" data-city="{{ location }}">{{ location }}</span>
+                        {% endif %}
+                        {% set directions = directions_by_day.get(day['id']) %}
+                        {% if directions %}
+                            <span class="hint">
+                                · <a href="{{ directions }}" target="_blank" rel="noopener">
+                                    <span class="icon icon-map" aria-hidden="true"></span>View route in Google Maps
+                                </a>
+                            </span>
+                        {% endif %}
+                    </h4>
+
+                    {% set comp = completion_by_day.get(day['id']) %}
+                    {% if comp %}
+                        <div class="day-progress">
+                            <div class="day-progress-bar">
+                                <div class="day-progress-fill" style="width: {{ comp.percent }}%;"></div>
+                            </div>
+                            <p class="hint day-progress-text">
+                                {{ comp.slots_filled }}/{{ comp.total_slots }} time-of-day slots ·
+                                {{ comp.meals_picked }}/{{ comp.total_meals }} meals picked
+                            </p>
+                        </div>
+                    {% endif %}
+
+                    <div class="day-card-body">
+
+                    <div class="slot slot-morning">
+                        <h5>Morning</h5>
+                        <label>
+                            Description
+                            <textarea name="morning_description_{{ day['id'] }}">{{ day['morning_description'] or '' }}</textarea>
+                        </label>
+                        <label>
+                            Google Maps link
+                            <input type="url" name="morning_map_link_{{ day['id'] }}" value="{{ day['morning_map_link'] or '' }}">
+                        </label>
+                        {% set morning_places = selected_places | selectattr('slot', 'equalto', 'morning') | list %}
+                        {% set morning_restaurants = selected_restaurants | selectattr('slot', 'equalto', 'breakfast') | list %}
+                        {% if morning_places or morning_restaurants %}
+                            <ul class="selected-list">
+                                {% for item in morning_places %}
+                                    <li><a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a></li>
+                                {% endfor %}
+                                {% for item in morning_restaurants %}
+                                    <li><a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+
+                    <div class="slot slot-afternoon">
+                        <h5>Afternoon</h5>
+                        <label>
+                            Description
+                            <textarea name="afternoon_description_{{ day['id'] }}">{{ day['afternoon_description'] or '' }}</textarea>
+                        </label>
+                        <label>
+                            Google Maps link
+                            <input type="url" name="afternoon_map_link_{{ day['id'] }}" value="{{ day['afternoon_map_link'] or '' }}">
+                        </label>
+                        {% set afternoon_places = selected_places | selectattr('slot', 'equalto', 'afternoon') | list %}
+                        {% set afternoon_restaurants = selected_restaurants | selectattr('slot', 'equalto', 'lunch') | list %}
+                        {% if afternoon_places or afternoon_restaurants %}
+                            <ul class="selected-list">
+                                {% for item in afternoon_places %}
+                                    <li><a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a></li>
+                                {% endfor %}
+                                {% for item in afternoon_restaurants %}
+                                    <li><a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+
+                    <div class="slot slot-evening">
+                        <h5>Evening</h5>
+                        <label>
+                            Description
+                            <textarea name="evening_description_{{ day['id'] }}">{{ day['evening_description'] or '' }}</textarea>
+                        </label>
+                        <label>
+                            Google Maps link
+                            <input type="url" name="evening_map_link_{{ day['id'] }}" value="{{ day['evening_map_link'] or '' }}">
+                        </label>
+                        {% set evening_places = selected_places | selectattr('slot', 'equalto', 'evening') | list %}
+                        {% set evening_restaurants = selected_restaurants | selectattr('slot', 'equalto', 'dinner') | list %}
+                        {% if evening_places or evening_restaurants %}
+                            <ul class="selected-list">
+                                {% for item in evening_places %}
+                                    <li><a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a></li>
+                                {% endfor %}
+                                {% for item in evening_restaurants %}
+                                    <li><a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+
+                    <div class="slot checklist-slot">
+                        <h5>Places to Visit</h5>
+                        {% set all_places = day_items.get('place', []) %}
+                        {% set places_selected = all_places | selectattr('checked') | list %}
+                        {% set places_suggestions = all_places | rejectattr('checked') | list %}
+                        {% if not all_places %}
+                            <p class="hint">No places yet. Use the button above or add your own below.</p>
+                        {% else %}
+                            {% if places_selected %}
+                                <h6>Your picks</h6>
+                                <ul class="checklist">
+                                    {% for item in places_selected %}
+                                        <li>
+                                            <div class="checklist-item">
+                                                <label>
+                                                    <input type="checkbox"
+                                                           name="item_checked_{{ item['id'] }}"
+                                                           {% if item['checked'] %}checked{% endif %}>
+                                                    <a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a>
+                                                    <span class="selected-badge {% if not item['checked'] %}is-hidden{% endif %}">Selected</span>
+                                                </label>
+                                                <select name="place_slot_{{ item['id'] }}">
+                                                    <option value="">When?</option>
+                                                    <option value="morning" {% if item['slot'] == 'morning' %}selected{% endif %}>Morning</option>
+                                                    <option value="afternoon" {% if item['slot'] == 'afternoon' %}selected{% endif %}>Afternoon</option>
+                                                    <option value="evening" {% if item['slot'] == 'evening' %}selected{% endif %}>Evening</option>
+                                                </select>
+                                            </div>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            {% if places_suggestions %}
+                                <h6>
+                                    Suggestions
+                                    <span class="hint-icon"
+                                          title="Ideas for this city and day. Check any to include them, or use the trash icon to hide ones you won't visit.">?</span>
+                                </h6>
+                                <ul class="checklist checklist-suggestions">
+                                    {% for item in places_suggestions %}
+                                        <li>
+                                            <div class="checklist-item">
+                                                <label>
+                                                    <input type="checkbox"
+                                                           name="item_checked_{{ item['id'] }}"
+                                                           {% if item['checked'] %}checked{% endif %}>
+                                                    <a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a>
+                                                    <span class="selected-badge {% if not item['checked'] %}is-hidden{% endif %}">Selected</span>
+                                                </label>
+                                                <select name="place_slot_{{ item['id'] }}">
+                                                    <option value="">When?</option>
+                                                    <option value="morning" {% if item['slot'] == 'morning' %}selected{% endif %}>Morning</option>
+                                                    <option value="afternoon" {% if item['slot'] == 'afternoon' %}selected{% endif %}>Afternoon</option>
+                                                    <option value="evening" {% if item['slot'] == 'evening' %}selected{% endif %}>Evening</option>
+                                                </select>
+                                                <button type="button"
+                                                        class="hide-suggestion-button icon icon-trash"
+                                                        data-hide-url="{{ url_for('hide_day_item', trip_id=trip['id'], item_id=item['id']) }}"
+                                                        title="Hide this suggestion"></button>
+                                            </div>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        {% endif %}
+                        <label>
+                            Add custom place
+                            <input type="text" name="new_place_{{ day['id'] }}" placeholder="Market, museum, viewpoint">
+                        </label>
+                    </div>
+
+                    <div class="slot checklist-slot">
+                        <h5>Recommended Restaurants</h5>
+                        {% set all_restaurants = day_items.get('restaurant', []) %}
+                        {% set restaurants_selected = all_restaurants | selectattr('checked') | list %}
+                        {% set restaurants_suggestions = all_restaurants | rejectattr('checked') | list %}
+                        {% if not all_restaurants %}
+                            <p class="hint">No restaurants yet. Use the button above or add your own below.</p>
+                        {% else %}
+                            {% if restaurants_selected %}
+                                <h6>Your picks</h6>
+                                <ul class="checklist">
+                                    {% for item in restaurants_selected %}
+                                        <li>
+                                            <div class="checklist-item">
+                                                <label>
+                                                    <input type="checkbox"
+                                                           name="item_checked_{{ item['id'] }}"
+                                                           {% if item['checked'] %}checked{% endif %}>
+                                                    <a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a>
+                                                    <span class="selected-badge {% if not item['checked'] %}is-hidden{% endif %}">Selected</span>
+                                                </label>
+                                                <select name="restaurant_slot_{{ item['id'] }}">
+                                                    <option value="">Meal?</option>
+                                                    <option value="breakfast" {% if item['slot'] == 'breakfast' %}selected{% endif %}>Breakfast</option>
+                                                    <option value="lunch" {% if item['slot'] == 'lunch' %}selected{% endif %}>Lunch</option>
+                                                    <option value="dinner" {% if item['slot'] == 'dinner' %}selected{% endif %}>Dinner</option>
+                                                    <option value="snack" {% if item['slot'] == 'snack' %}selected{% endif %}>Snacks</option>
+                                                </select>
+                                            </div>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            {% if restaurants_suggestions %}
+                                <h6>
+                                    Suggestions
+                                    <span class="hint-icon"
+                                          title="Restaurant ideas for this day. Check to include, or hide any you don't want.">?</span>
+                                </h6>
+                                <ul class="checklist checklist-suggestions">
+                                    {% for item in restaurants_suggestions %}
+                                        <li>
+                                            <div class="checklist-item">
+                                                <label>
+                                                    <input type="checkbox"
+                                                           name="item_checked_{{ item['id'] }}"
+                                                           {% if item['checked'] %}checked{% endif %}>
+                                                    <a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a>
+                                                    <span class="selected-badge {% if not item['checked'] %}is-hidden{% endif %}">Selected</span>
+                                                </label>
+                                                <select name="restaurant_slot_{{ item['id'] }}">
+                                                    <option value="">Meal?</option>
+                                                    <option value="breakfast" {% if item['slot'] == 'breakfast' %}selected{% endif %}>Breakfast</option>
+                                                    <option value="lunch" {% if item['slot'] == 'lunch' %}selected{% endif %}>Lunch</option>
+                                                    <option value="dinner" {% if item['slot'] == 'dinner' %}selected{% endif %}>Dinner</option>
+                                                    <option value="snack" {% if item['slot'] == 'snack' %}selected{% endif %}>Snacks</option>
+                                                </select>
+                                                <button type="button"
+                                                        class="hide-suggestion-button icon icon-trash"
+                                                        data-hide-url="{{ url_for('hide_day_item', trip_id=trip['id'], item_id=item['id']) }}"
+                                                        title="Hide this suggestion"></button>
+                                            </div>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        {% endif %}
+                        <label>
+                            Add restaurant you find
+                            <input type="text" name="new_restaurant_{{ day['id'] }}" placeholder="Cafe, bakery, dinner spot">
+                        </label>
+                    </div>
+
+                    <div class="slot checklist-slot">
+                        <h5>Hotels / Stays</h5>
+                        {% set hotels_filtered = hotels_filtered_by_day.get(day['id'], []) %}
+                        {% set hotels_selected = hotels_filtered | selectattr('checked') | list %}
+                        {% set hotels_suggestions = hotels_filtered | rejectattr('checked') | list %}
+                        {% if not hotels_filtered %}
+                            <p class="hint">No stays yet for this location. Use the button above or add your own below.</p>
+                        {% else %}
+                            {% if hotels_selected %}
+                                <h6>Your picks</h6>
+                                <ul class="checklist">
+                                    {% for item in hotels_selected %}
+                                        <li>
+                                            <label class="checklist-item">
+                                                <input type="checkbox"
+                                                       name="item_checked_{{ item['id'] }}"
+                                                       {% if item['checked'] %}checked{% endif %}>
+                                                <a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a>
+                                                <span class="selected-badge {% if not item['checked'] %}is-hidden{% endif %}">Selected</span>
+                                            </label>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            {% if hotels_suggestions %}
+                                <h6>
+                                    Suggestions
+                                    <span class="hint-icon"
+                                          title="Stays that match today's city. Pick one or more, or hide those you won't use.">?</span>
+                                </h6>
+                                <ul class="checklist checklist-suggestions">
+                                    {% for item in hotels_suggestions %}
+                                        <li>
+                                            <label class="checklist-item">
+                                                <input type="checkbox"
+                                                       name="item_checked_{{ item['id'] }}"
+                                                       {% if item['checked'] %}checked{% endif %}>
+                                                <a href="{{ item['name']|google_maps_url }}" target="_blank" rel="noopener">{{ item['name'] }}</a>
+                                                <span class="selected-badge {% if not item['checked'] %}is-hidden{% endif %}">Selected</span>
+                                            </label>
+                                            <button type="button"
+                                                    class="hide-suggestion-button icon icon-trash"
+                                                    data-hide-url="{{ url_for('hide_day_item', trip_id=trip['id'], item_id=item['id']) }}"
+                                                    title="Hide this suggestion"></button>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        {% endif %}
+                        <label>
+                            Add hotel/Airbnb
+                            <input type="text" name="new_hotel_{{ day['id'] }}" placeholder="Hotel or Airbnb name">
+                        </label>
+                    </div>
+                </article>
+            {% endfor %}
+            <div class="itinerary-actions-bar">
+                <button type="submit">Save Itinerary</button>
+                <a class="button-link secondary" href="{{ url_for('trip_summary', trip_id=trip['id']) }}">
+                    View Selected Itinerary
+                </a>
+                <a class="button-link secondary" href="{{ url_for('export_trip_csv', trip_id=trip['id']) }}">
+                    <span class="icon icon-download" aria-hidden="true"></span>Download CSV
+                </a>
+                <a class="button-link secondary" href="{{ url_for('import_trip_csv_into_trip', trip_id=trip['id']) }}">
+                    <span class="icon icon-upload" aria-hidden="true"></span>Import CSV
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <aside class="layout-side">
+        <section class="card">
+            <h3>Trip Stops (Cities / Regions)</h3>
+            {% if stops %}
+                <ul>
+                    {% for stop in stops %}
+                        <li>
+                            <strong><a href="{{ stop['name']|google_maps_url }}" target="_blank" rel="noopener">{{ stop['name'] }}</a></strong><br>
+                            {{ stop['start_date'] }} → {{ stop['end_date'] }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="hint">Add cities or regions you plan to visit within this country.</p>
+            {% endif %}
+            <form method="post" action="{{ url_for('add_trip_stop', trip_id=trip['id']) }}">
+                <label>
+                    City / Location
+                    <input type="text" name="name" placeholder="Tokyo, Kyoto, Osaka" required>
+                </label>
+                <div class="row">
+                    <label>
+                        Start
+                        <input type="date" name="start_date" required>
+                    </label>
+                    <label>
+                        End
+                        <input type="date" name="end_date" required>
+                    </label>
+                </div>
+                <button type="submit">Add Stop</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h3>Simple Budget Tracker</h3>
+            <form method="post" action="{{ url_for('add_budget_item', trip_id=trip['id']) }}">
+                <label>
+                    Item
+                    <input type="text" name="label" placeholder="Flights, Lodging, Food" required>
+                </label>
+                <div class="row">
+                    <label>
+                        Estimated
+                        <input type="number" step="0.01" name="estimated_cost">
+                    </label>
+                    <label>
+                        Actual
+                        <input type="number" step="0.01" name="actual_cost">
+                    </label>
+                </div>
+                <button type="submit">Add Budget Item</button>
+            </form>
+
+            {% if budget_items %}
+                <form method="post" action="{{ url_for('update_budget_items', trip_id=trip['id']) }}">
+                    <div class="budget-bar">
+                        <div class="budget-bar-fill" style="width: {{ budget_progress_percent }}%;"></div>
+                    </div>
+                    <table class="budget-table">
+                        <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Estimated</th>
+                            <th>Actual</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in budget_items %}
+                            <tr>
+                                <td>{{ item['label'] }}</td>
+                                <td>${{ '%.2f'|format(item['estimated_cost'] or 0) }}</td>
+                                <td class="budget-actual-cell">
+                                    <input type="number"
+                                           step="0.01"
+                                           name="actual_{{ item['id'] }}"
+                                           value="{{ '%.2f'|format(item['actual_cost'] or 0) }}">
+                                </td>
+                                <td class="budget-remove-cell">
+                                    <button type="submit"
+                                            class="budget-remove-button icon icon-trash"
+                                            aria-label="Remove budget item"
+                                            formaction="{{ url_for('delete_budget_item', trip_id=trip['id'], item_id=item['id']) }}">
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <th>Total</th>
+                            <th>${{ '%.2f'|format(total_estimated) }}</th>
+                            <th>${{ '%.2f'|format(total_actual) }}</th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                    <button type="submit">Update Actuals</button>
+                </form>
+            {% else %}
+                <p class="hint">No budget items yet. Add flights, lodging, and food above to start tracking your costs.</p>
+            {% endif %}
+        </section>
+
+        <section class="card">
+            <h3>Dynamic Packing List</h3>
+            <form method="post" action="{{ url_for('update_packing_items', trip_id=trip['id']) }}">
+                {% for category, items in packing_items_by_category.items() %}
+                    <h4>{{ category }}</h4>
+                    <ul class="packing-list">
+                        {% for item in items %}
+                            <li class="packing-item-row">
+                                <label class="packing-item-check">
+                                    <input type="checkbox"
+                                           name="packing_checked_{{ item['id'] }}"
+                                           {% if item['checked'] %}checked{% endif %}>
+                                </label>
+                                <input type="text"
+                                       name="packing_label_{{ item['id'] }}"
+                                       value="{{ item['label'] }}"
+                                       class="packing-item-input">
+                                <button type="submit"
+                                        class="packing-remove-button icon icon-trash"
+                                        aria-label="Remove packing item"
+                                        formaction="{{ url_for('delete_packing_item', trip_id=trip['id'], item_id=item['id']) }}">
+                                </button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endfor %}
+                <div class="row">
+                    <label>
+                        New item
+                        <input type="text" name="new_packing_label" placeholder="Extra charger, gifts, etc.">
+                    </label>
+                    <label>
+                        Category
+                        <input type="text" name="new_packing_category" placeholder="e.g., Extras">
+                    </label>
+                </div>
+                <button type="submit" class="secondary">Update packing list</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h3>Weather During Trip</h3>
+            <ul>
+                {% for item in weather_forecast %}
+                    <li>{{ item.date }} — {{ item.summary }}</li>
+                {% endfor %}
+            </ul>
+            <p class="hint">
+                Weather source:
+                {% if using_live_weather %}
+                    Live OpenWeather forecast
+                {% else %}
+                    Offline placeholder forecast
+                {% endif %}
+            </p>
+        </section>
+
+        <section class="card">
+            <h3>Foodie Twist</h3>
+            {% for city, highlights in foodie_highlights_by_city.items() %}
+                <h4>{{ city }}</h4>
+                <h5>Dishes to Try</h5>
+                <ul>
+                    {% for dish in highlights.dishes_to_try %}
+                        <li>
+                            <a href="{{ (dish ~ ' in ' ~ city) | google_maps_url }}" target="_blank" rel="noopener">
+                                {{ dish }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <h5>Hidden Gems</h5>
+                <ul>
+                    {% for spot in highlights.hidden_gems %}
+                        <li>
+                            <a href="{{ (spot ~ ' in ' ~ city) | google_maps_url }}" target="_blank" rel="noopener">
+                                {{ spot }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <h5>Grocery List</h5>
+                <ul>
+                    {% for item in highlights.grocery_list %}
+                        <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            {% endfor %}
+
+            <a class="button-link" href="{{ url_for('simple_recipe', trip_id=trip['id']) }}">
+                "Terrible Cook" Local Recipe
+            </a>
+        </section>
+    </aside>
+</section>
+
+{% endblock %}

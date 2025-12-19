@@ -1,0 +1,6 @@
+__pycache__/
+.venv/
+config_local.py
+trip_planner.sqlite
+.DS_Store
+

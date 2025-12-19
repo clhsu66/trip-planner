@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Trip - Trip Planner{% endblock %}
+
+{% block content %}
+<h2>Edit Trip</h2>
+<form method="post" class="card">
+    <label>
+        Destination
+        <input type="text" name="destination" value="{{ trip['destination'] }}" required>
+    </label>
+    <div class="row">
+        <label>
+            Start Date
+            <input type="date" name="start_date" value="{{ trip['start_date'] }}" required>
+        </label>
+        <label>
+            End Date
+            <input type="date" name="end_date" value="{{ trip['end_date'] }}" required>
+        </label>
+    </div>
+    <label>
+        Travel Style
+        <select name="travel_style">
+            <option value="Budget" {% if trip['travel_style'] == 'Budget' %}selected{% endif %}>Budget</option>
+            <option value="Luxury" {% if trip['travel_style'] == 'Luxury' %}selected{% endif %}>Luxury</option>
+            <option value="Family" {% if trip['travel_style'] == 'Family' %}selected{% endif %}>Family</option>
+            <option value="Foodie" {% if trip['travel_style'] == 'Foodie' %}selected{% endif %}>Foodie</option>
+            <option value="Flexible" {% if trip['travel_style'] == 'Flexible' %}selected{% endif %}>Flexible / Mix</option>
+        </select>
+    </label>
+    <button type="submit">Save Changes</button>
+    <a href="{{ url_for('trip_detail', trip_id=trip['id']) }}">Cancel</a>
+    <p class="hint">Changing dates will adjust the day-by-day timeline. Existing notes are kept for dates that still fall within the new range.</p>
+</form>
+{% endblock %}
+

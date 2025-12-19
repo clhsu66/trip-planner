@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Plan a New Trip - Trip Planner{% endblock %}
+
+{% block content %}
+<h2>Plan a New Trip</h2>
+<form method="post" class="card">
+    <label>
+        Destination
+        <input type="text" name="destination" placeholder="Tokyo, Japan" required>
+    </label>
+    <div class="row">
+        <label>
+            Start Date
+            <input type="date" name="start_date" required>
+        </label>
+        <label>
+            End Date
+            <input type="date" name="end_date" required>
+        </label>
+    </div>
+    <label>
+        Travel Style
+        <select name="travel_style">
+            <option value="Budget">Budget</option>
+            <option value="Luxury">Luxury</option>
+            <option value="Family">Family</option>
+            <option value="Foodie">Foodie</option>
+            <option value="Flexible" selected>Flexible / Mix</option>
+        </select>
+    </label>
+    <button type="submit">Create Trip</button>
+</form>
+{% endblock %}
+

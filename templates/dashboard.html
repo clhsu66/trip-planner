@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}My Trips - Trip Planner{% endblock %}
+
+{% block content %}
+<section class="card">
+    <h2>Import Trip from CSV</h2>
+    <p class="hint">
+        Have a trip plan in a spreadsheet? Upload a CSV to create a new trip and pre-fill its itinerary.
+    </p>
+    <a class="button-link" href="{{ url_for('import_trip_csv') }}">
+        <span class="icon icon-upload" aria-hidden="true"></span>Import CSV
+    </a>
+</section>
+
+<section>
+    <h2>Upcoming Trips</h2>
+    {% if upcoming_trips %}
+        <ul class="trip-list">
+            {% for trip in upcoming_trips %}
+                <li>
+                    <div class="trip-card-header">
+                        <div class="trip-location-graphic"
+                             data-destination="{{ trip['destination'] | e }}">
+                            {{ trip['destination'][:2].upper() }}
+                        </div>
+                        <div class="trip-card-main">
+                            <h3><a href="{{ url_for('trip_detail', trip_id=trip['id']) }}">{{ trip['destination'] }}</a></h3>
+                            {% set status = status_by_trip.get(trip['id']) %}
+                            {% if status %}
+                                <p class="hint">
+                                    <span class="status-badge status-{{ status|lower|replace(' ', '-') }}">{{ status }}</span>
+                                </p>
+                            {% endif %}
+                            <p>{{ trip['start_date'] }} → {{ trip['end_date'] }}</p>
+                            <p>Style: {{ trip['travel_style'] }}</p>
+                            <form method="post" action="{{ url_for('delete_trip', trip_id=trip['id']) }}">
+                                <button type="submit" class="icon icon-trash" aria-label="Delete trip">
+                                    Delete Trip
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No upcoming trips yet. <a href="{{ url_for('new_trip') }}">Plan a new trip</a> or <a href="{{ url_for('import_trip_csv') }}">import one from CSV</a>.</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Past Trips</h2>
+    {% if past_trips %}
+        <ul class="trip-list">
+            {% for trip in past_trips %}
+                <li>
+                    <div class="trip-card-header">
+                        <div class="trip-location-graphic"
+                             data-destination="{{ trip['destination'] | e }}">
+                            {{ trip['destination'][:2].upper() }}
+                        </div>
+                        <div class="trip-card-main">
+                            <h3><a href="{{ url_for('trip_detail', trip_id=trip['id']) }}">{{ trip['destination'] }}</a></h3>
+                            {% set status = status_by_trip.get(trip['id']) %}
+                            {% if status %}
+                                <p class="hint">
+                                    <span class="status-badge status-{{ status|lower|replace(' ', '-') }}">{{ status }}</span>
+                                </p>
+                            {% endif %}
+                            <p>{{ trip['start_date'] }} → {{ trip['end_date'] }}</p>
+                            <p>Style: {{ trip['travel_style'] }}</p>
+                        </div>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No past trips recorded yet. Your next adventure will be listed here after it ends.</p>
+    {% endif %}
+</section>
+{% endblock %}
